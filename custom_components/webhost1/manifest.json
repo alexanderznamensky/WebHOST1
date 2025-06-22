@@ -1,0 +1,12 @@
+
+{
+  "domain": "webhost1",
+  "name": "WebHOST1 MQTT Sensor",
+  "version": "1.0.0",
+  "documentation": "https://github.com/alexanderznamensky/WebHOST1",
+  "issue_tracker": "https://github.com/alexanderznamensky/WebHOST1/issues",
+  "requirements": [],
+  "dependencies": ["mqtt"],
+  "codeowners": ["@alexanderznamensky"],
+  "config_flow": true
+}
