@@ -1,0 +1,39 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Добавление мониторинга оплат Webhost1",
+        "description": "Введите данные аккаунта Webhost1",
+        "data": {
+          "username": "ID аккаунта Webhost1",
+          "password": "Пароль Webhost1",
+          "scan_interval": "Интервал обновления, минут"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Неверный ID аккаунта или пароль",
+      "cannot_connect": "Не удалось подключиться",
+      "unknown": "Неизвестная ошибка"
+    },
+    "abort": {
+      "already_configured": "Интеграция уже настроена"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Настройки Webhost1",
+        "description": "Изменение параметров подключения",
+        "data": {
+          "password": "Пароль Webhost1",
+          "scan_interval": "Интервал обновления, минут"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Неверный пароль",
+      "cannot_connect": "Не удалось подключиться"
+    }
+  }
+}

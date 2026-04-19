@@ -1,35 +1,125 @@
+from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from .const import SENSOR_TOPIC_TEMPLATE
-import logging
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN
+from .coordinator import Webhost1DataUpdateCoordinator
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
-    async_add_entities([MQTTSensor(hass, entry)], True)
 
-class MQTTSensor(SensorEntity):
-    def __init__(self, hass, entry):
-        self._hass = hass
-        self._entry = entry
-        self._state = None
-        self._attr_name = entry.data["name"]
-        self._attr_unique_id = f"webhost1_" + entry.data["sensor_id"]
-        self._topic = SENSOR_TOPIC_TEMPLATE.format(sensor_id=entry.data["sensor_id"])
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    coordinator: Webhost1DataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    async def async_added_to_hass(self):
-        try:
-            await self._hass.components.mqtt.async_subscribe(self._topic, self.mqtt_message_received)
-        except Exception as e:
-            _LOGGER.error(f"MQTT not available for sensor {self._attr_name}: {e}")
+    entities = []
+    for index, order in enumerate(coordinator.data.get("orders", []), start=1):
+        entities.append(Webhost1OrderSensor(coordinator, entry, index))
 
-    async def mqtt_message_received(self, msg):
-        self._state = msg.payload
-        self.async_write_ha_state()
+    async_add_entities(entities)
+
+
+class Webhost1BaseEntity(CoordinatorEntity):
+    def __init__(self, coordinator: Webhost1DataUpdateCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator)
+        self.entry = entry
 
     @property
-    def state(self):
-        return self._state
+    def device_info(self) -> DeviceInfo:
+        username = self.entry.data["username"]
+        return DeviceInfo(
+            identifiers={(DOMAIN, f"webhost1_{username}")},
+            name=f"Webhost1 {username}",
+            manufacturer="Webhost1",
+            model="Hosting Account",
+        )
+
+
+class Webhost1OrderSensor(Webhost1BaseEntity, SensorEntity):
+    _attr_icon = "mdi:server"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = "RUB"
+    _attr_suggested_display_precision = 2
+
+    def __init__(self, coordinator: Webhost1DataUpdateCoordinator, entry: ConfigEntry, index: int) -> None:
+        super().__init__(coordinator, entry)
+        self.index = index
+        username = self.entry.data["username"]
+        self._attr_unique_id = f"webhost1_{username}_order_{index}"
+
+    @property
+    def _order(self):
+        orders = self.coordinator.data.get("orders", [])
+        if self.index - 1 < len(orders):
+            return orders[self.index - 1]
+        return None
+
+    @property
+    def name(self):
+        order = self._order
+        if not order:
+            return f"Webhost1 Order {self.index}"
+        return f"Webhost1 {order.get('name')}"
+
+    @property
+    def available(self):
+        return self._order is not None
+
+    @property
+    def native_value(self):
+        balance = self.coordinator.data.get("balance")
+        if balance is not None:
+            try:
+                return round(
+                    float(
+                        str(balance)
+                        .replace("RUB", "")
+                        .replace("₽", "")
+                        .replace(" ", "")
+                        .replace(",", ".")
+                    ),
+                    2,
+                )
+            except (ValueError, TypeError):
+                pass
+
+        order = self._order
+        if not order:
+            return 0.0
+
+        price = order.get("price")
+        if price is None:
+            return 0.0
+
+        try:
+            return round(float(str(price).replace(",", ".")), 2)
+        except (ValueError, TypeError):
+            return 0.0
+
+    @property
+    def extra_state_attributes(self):
+        order = self._order
+        if not order:
+            return {}
+
+        return {
+            "provider": "Webhost1",
+            "due_date": order.get("due_date"),
+            "days_left": order.get("days_left"),
+            "message": order.get("message"),
+            "IP": order.get("ip"),
+            "Order": order.get("order_id"),
+            "price": order.get("price"),
+            "tariff": order.get("tariff"),
+            "status": order.get("status"),
+            "server": order.get("server"),
+            "type": order.get("type"),
+            "vm_id": order.get("vm_id"),
+            "autopay": order.get("autopay"),
+        }

@@ -1,3 +1,7 @@
-
 DOMAIN = "webhost1"
-SENSOR_TOPIC_TEMPLATE = "custom_sensors/webhost1/{sensor_id}"
+
+CONF_USERNAME = "username"
+CONF_PASSWORD = "password"
+CONF_SCAN_INTERVAL = "scan_interval"
+
+DEFAULT_SCAN_INTERVAL = 60

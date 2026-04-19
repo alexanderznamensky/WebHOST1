@@ -1,12 +1,13 @@
-
 {
   "domain": "webhost1",
-  "name": "WebHOST1 MQTT Sensor",
-  "version": "1.0.0",
-  "documentation": "https://github.com/alexanderznamensky/WebHOST1",
-  "issue_tracker": "https://github.com/alexanderznamensky/WebHOST1/issues",
+  "name": "Webhost1",
+  "version": "1.0.3",
+  "documentation": "https://github.com/alexanderznamensky/webhost1",
+  "issue_tracker": "https://github.com/alexanderznamensky/webhost1/issues",
   "requirements": [],
-  "dependencies": ["mqtt"],
-  "codeowners": ["@alexanderznamensky"],
-  "config_flow": true
+  "dependencies": [],
+  "config_flow": true,
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "codeowners": ["@alexanderznamensky"]
 }
