@@ -39,7 +39,10 @@ class Webhost1ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_USERNAME): str,
                 vol.Required(CONF_PASSWORD): str,
-                vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): int,
+                vol.Optional(
+                    CONF_SCAN_INTERVAL,
+                    default=DEFAULT_SCAN_INTERVAL,
+                ): vol.All(int, vol.Range(min=5, max=1440)),
             }
         )
 
@@ -93,7 +96,10 @@ class Webhost1OptionsFlow(config_entries.OptionsFlow):
         schema = vol.Schema(
             {
                 vol.Required(CONF_PASSWORD, default=current_password): str,
-                vol.Required(CONF_SCAN_INTERVAL, default=current_scan_interval): int,
+                vol.Required(
+                    CONF_SCAN_INTERVAL,
+                    default=current_scan_interval,
+                ): vol.All(int, vol.Range(min=5, max=1440)),
             }
         )
 
