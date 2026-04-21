@@ -98,7 +98,7 @@ def extract_orders_json(html: str) -> list[dict[str, Any]]:
         raise UpdateFailed(f"Не удалось разобрать JSON заказов: {err}") from err
 
 
-def extract_balance(html: str) -> str | None:
+def extract_balance(html: str) -> float | None:
     match = re.search(
         r"Баланс:.*?([0-9]+(?:[.,][0-9]+)?)\s*₽",
         html,
@@ -110,12 +110,9 @@ def extract_balance(html: str) -> str | None:
     raw_value = match.group(1).replace(",", ".").strip()
 
     try:
-        value = float(raw_value)
+        return round(float(raw_value), 2)
     except ValueError:
         return None
-
-    return f"{value:.2f}".replace(".", ",") + " RUB"
-
 
 def normalize_order(item: dict[str, Any]) -> dict[str, Any]:
     expired_at = None

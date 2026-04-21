@@ -73,16 +73,12 @@ class Webhost1OrderSensor(Webhost1BaseEntity, SensorEntity):
 
     @property
     def native_value(self):
-        order = self._order
-        if not order:
-            return 0.0
-
-        price = order.get("price")
-        if price is None:
+        balance = self.coordinator.data.get("balance")
+        if balance is None:
             return 0.0
 
         try:
-            return round(float(str(price).replace(",", ".")), 2)
+            return round(float(balance), 2)
         except (ValueError, TypeError):
             return 0.0
 
@@ -106,6 +102,7 @@ class Webhost1OrderSensor(Webhost1BaseEntity, SensorEntity):
             "type": order.get("type"),
             "vm_id": order.get("vm_id"),
             "autopay": order.get("autopay"),
+            "balance": self.coordinator.data.get("balance"),
             "last_update": self.coordinator.data.get("last_update"),
             "execution_seconds": self.coordinator.data.get("execution_seconds"),
         }
