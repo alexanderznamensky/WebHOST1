@@ -4,6 +4,7 @@ import json
 import html as html_lib
 import logging
 import re
+import time
 from datetime import datetime
 from typing import Any
 
@@ -13,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, CONF_USERNAME, CONF_PASSWORD
 
@@ -217,12 +219,17 @@ class Webhost1DataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.entry.data[CONF_PASSWORD],
         )
 
+        started = time.time()
+
         try:
-            return await self.hass.async_add_executor_job(
+            data = await self.hass.async_add_executor_job(
                 fetch_webhost1_data,
                 username,
                 password,
             )
+            data["last_update"] = dt_util.now().isoformat()
+            data["execution_seconds"] = round(time.time() - started, 2)
+            return data
         except InvalidAuth as err:
             raise ConfigEntryAuthFailed(f"invalid_auth: {err}") from err
         except Exception as err:
