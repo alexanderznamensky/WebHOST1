@@ -59,6 +59,13 @@ def parse_dt(date_str: str | None) -> datetime | None:
     return None
 
 
+def format_due_date(date_str: str | None) -> str | None:
+    dt = parse_dt(date_str)
+    if not dt:
+        return date_str
+    return dt.strftime("%d.%m.%Y")
+
+
 def calc_days_left(due_date: str | None) -> int | None:
     dt = parse_dt(due_date)
     if not dt:
@@ -114,25 +121,26 @@ def extract_balance(html: str) -> float | None:
     except ValueError:
         return None
 
+
 def normalize_order(item: dict[str, Any]) -> dict[str, Any]:
-    expired_at = None
+    raw_due_date = None
     if isinstance(item.get("expired_at"), dict):
-        expired_at = item["expired_at"].get("date")
+        raw_due_date = item["expired_at"].get("date")
 
     tariff_name = None
     tariff_obj = item.get("tariffObject")
     if isinstance(tariff_obj, dict):
         tariff_name = tariff_obj.get("name")
 
-    due_date = expired_at
-    days_left = calc_days_left(due_date)
+    days_left = calc_days_left(raw_due_date)
+    formatted_due_date = format_due_date(raw_due_date)
 
     return {
         "name": item.get("name"),
         "order_id": item.get("id"),
         "ip": item.get("ip"),
         "price": item.get("price"),
-        "due_date": due_date,
+        "due_date": formatted_due_date,
         "days_left": days_left,
         "status": item.get("status"),
         "tariff": tariff_name,
@@ -140,7 +148,7 @@ def normalize_order(item: dict[str, Any]) -> dict[str, Any]:
         "type": item.get("type"),
         "vm_id": item.get("vm_id"),
         "autopay": item.get("autopay"),
-        "message": build_message(item.get("name", "unknown"), due_date),
+        "message": build_message(item.get("name", "unknown"), raw_due_date),
     }
 
 
