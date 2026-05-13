@@ -75,12 +75,12 @@ class Webhost1OrderSensor(Webhost1BaseEntity, SensorEntity):
     def native_value(self):
         balance = self.coordinator.data.get("balance")
         if balance is None:
-            return 0.0
+            return 0.00
 
         try:
-            return round(float(balance), 2)
+            return float(f"{float(balance):.2f}")
         except (ValueError, TypeError):
-            return 0.0
+            return 0.00
 
     @property
     def extra_state_attributes(self):

@@ -7,7 +7,7 @@
         "data": {
           "username": "ID аккаунта Webhost1",
           "password": "Пароль Webhost1",
-          "scan_interval": "Интервал обновления, минут"
+          "scan_interval": "Интервал обновления, мин."
         }
       }
     },
@@ -27,7 +27,7 @@
         "description": "Изменение параметров подключения",
         "data": {
           "password": "Пароль Webhost1",
-          "scan_interval": "Интервал обновления, минут"
+          "scan_interval": "Интервал обновления, мин."
         }
       }
     },
